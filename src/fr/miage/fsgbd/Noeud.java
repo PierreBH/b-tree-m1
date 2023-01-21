@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * @author Galli Gregory, Mopolo Moke Gabriel
  */
 public class Noeud<Type> implements java.io.Serializable {
-
+    public Ligne ligne;
 
     // Collection des Noeuds enfants du noeud courant
     public ArrayList<Noeud<Type>> fils = new ArrayList<Noeud<Type>>();
@@ -37,6 +37,13 @@ public class Noeud<Type> implements java.io.Serializable {
         this.tailleMin = u/2;
         compar = e;
         this.parent = parent;
+    }
+    public Noeud(int u, Executable e, Noeud<Type> parent, Ligne ligne) {
+        this.u = u;
+        this.tailleMin = u/2;
+        compar = e;
+        this.parent = parent;
+        this.ligne = ligne;
     }
 
     public boolean compare(Type arg1, Type arg2) {
@@ -160,6 +167,7 @@ public class Noeud<Type> implements java.io.Serializable {
 
     public Noeud<Type> addValeur(Type nouvelleValeur) {
         Noeud<Type> racine = addValeur(nouvelleValeur, false);
+        racine.ligne = new Ligne((Integer) nouvelleValeur, Ligne.generateRandomFirstName(), Ligne.generatePrenom());
         return racine;
     }
 
