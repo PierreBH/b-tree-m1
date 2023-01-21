@@ -9,6 +9,8 @@ out/
 # Log file
 *.log
 
+.abr
+
 # BlueJ files
 *.ctxt
 
