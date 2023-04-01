@@ -28,7 +28,7 @@ public class Noeud<Type> implements java.io.Serializable {
 
     private int numeroLigne = 0;
 
-    private Map<Type, Integer> pointeur = new HashMap<>();
+    private Map<Type, Position> pointeur = new HashMap<>();
 
     // Ordre de l'abre (u = nombre de clés maximum = 2m)
     private final int u, tailleMin;
@@ -547,8 +547,7 @@ public class Noeud<Type> implements java.io.Serializable {
                 noeud.insert(nouvelleValeur);
         }
 
-
-//        System.out.println("Insertion de " + nouvelleValeur + " dans la ligne " + numLigne + " du noeud " + noeud);
+        pointeur.put(nouvelleValeur, getRacine().trouverPositionFeuille(nouvelleValeur, 0));
         return racine;
     }
     public Position trouverPositionFeuille(Type valeur, int niveau) {
@@ -566,6 +565,13 @@ public class Noeud<Type> implements java.io.Serializable {
             }
         }
         return null;
+    }
+    public Noeud<Type> getRacine() {
+        Noeud<Type> noeudCourant = this;
+        while (noeudCourant.parent != null) {
+            noeudCourant = noeudCourant.parent;
+        }
+        return noeudCourant;
     }
 }
 
