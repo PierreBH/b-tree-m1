@@ -1,6 +1,8 @@
 package fr.miage.fsgbd;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /*
@@ -17,11 +19,16 @@ public class Noeud<Type> implements java.io.Serializable {
     // Collection des clés du noeud courant
     public ArrayList<Type> keys = new ArrayList<Type>();
 
+
     // Noeud Parent du noeud courant
     private Noeud<Type> parent;
 
     // Classe interfaçant "Executable" et donc contenant une procédure de comparaison de <Type>
     private Executable compar;
+
+    private int numeroLigne = 0;
+
+    private Map<Type, Integer> pointeur = new HashMap<>();
 
     // Ordre de l'abre (u = nombre de clés maximum = 2m)
     private final int u, tailleMin;
@@ -475,7 +482,7 @@ public class Noeud<Type> implements java.io.Serializable {
 
                 // On récupère la valeur centrale du noeud courant pour plus tard
                 eleMedian = noeud.keys.get(indexMedian);
-
+                System.out.println(pointeur);
                 // On utilise un appel récursif pour ajouter au noeud gauche, les clefs du noeud courant
                 for (int i = 0; i < indexMedian; i++)
                     noeudGauche.addValeur(noeud.keys.get(i));
@@ -540,6 +547,26 @@ public class Noeud<Type> implements java.io.Serializable {
                 noeud.insert(nouvelleValeur);
         }
 
+
+//        System.out.println("Insertion de " + nouvelleValeur + " dans la ligne " + numLigne + " du noeud " + noeud);
         return racine;
     }
+    public Position trouverPositionFeuille(Type valeur, int niveau) {
+        if (fils.isEmpty()) { // Si le noeud courant est une feuille
+            int index = keys.indexOf(valeur);
+            if (index != -1) {
+                return new Position(niveau, index);
+            }
+        } else { // Si le noeud courant n'est pas une feuille
+            for (Noeud<Type> fils : fils) {
+                Position position = fils.trouverPositionFeuille(valeur, niveau + 1);
+                if (position != null) {
+                    return position;
+                }
+            }
+        }
+        return null;
+    }
 }
+
+
