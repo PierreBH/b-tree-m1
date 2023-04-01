@@ -9,8 +9,12 @@ out/
 # Log file
 *.log
 
+.abr
+
 # BlueJ files
 *.ctxt
+
+.abr
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
