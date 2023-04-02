@@ -2,6 +2,7 @@ package fr.miage.fsgbd;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -26,9 +27,8 @@ public class Noeud<Type> implements java.io.Serializable {
     // Classe interfaçant "Executable" et donc contenant une procédure de comparaison de <Type>
     private Executable compar;
 
-    private int numeroLigne = 0;
-
     private Map<Type, Position> pointeur = new HashMap<>();
+    private Noeud<Type> feuilleSuivante;
 
     // Ordre de l'abre (u = nombre de clés maximum = 2m)
     private final int u, tailleMin;
@@ -361,8 +361,13 @@ public class Noeud<Type> implements java.io.Serializable {
     {
         for(Noeud<Type> noeud : this.fils)
         {
-            if (noeud.fils.isEmpty())
+            if (noeud.fils.isEmpty()){
                 keyz.addAll(noeud.keys);
+                Noeud<Type> noeudSuivant = noeud.getNoeudSuivant();
+                if (noeudSuivant != null && noeudSuivant.fils.isEmpty()){
+                    noeud.setFeuilleSuivante(noeudSuivant);
+                }
+            }
             else
             {
                 for (Noeud<Type> fils : noeud.fils)
@@ -482,7 +487,7 @@ public class Noeud<Type> implements java.io.Serializable {
 
                 // On récupère la valeur centrale du noeud courant pour plus tard
                 eleMedian = noeud.keys.get(indexMedian);
-                System.out.println(pointeur);
+               //System.out.println(pointeur);
                 // On utilise un appel récursif pour ajouter au noeud gauche, les clefs du noeud courant
                 for (int i = 0; i < indexMedian; i++)
                     noeudGauche.addValeur(noeud.keys.get(i));
@@ -572,6 +577,45 @@ public class Noeud<Type> implements java.io.Serializable {
             noeudCourant = noeudCourant.parent;
         }
         return noeudCourant;
+    }
+    public void setFeuilleSuivante(Noeud<Type> feuilleSuivante) {
+        this.feuilleSuivante = feuilleSuivante;
+    }
+    public Noeud<Type> getFeuilleSuivante() {
+        return feuilleSuivante;
+    }
+//    public List<Type> parcoursSequentiel(){
+//        List<Type> liste = new ArrayList<>();
+//        Noeud<Type> noeudCourant = this;
+//        // On se place sur la feuille la plus à gauche
+//        while(!noeudCourant.fils.isEmpty()){
+//            noeudCourant = noeudCourant.fils.get(0);
+//        }
+//        Noeud<Type> feuilleCourante = noeudCourant;
+//        // On parcours toutes les feuilles
+//        while(feuilleCourante != null){
+//            // On ajoute les clefs de la feuille courante à la liste
+//            liste.addAll(feuilleCourante.keys);
+//            feuilleCourante = feuilleCourante.feuilleSuivante;
+//        }
+//        return liste;
+//    }
+    public List<Noeud<Type>> parcoursSequentiel(){
+        List<Noeud<Type>> feuilles = new ArrayList<>();
+        if(fils.isEmpty()){
+            feuilles.add(this);
+        } else {
+            for(Noeud<Type> fils : fils){
+                feuilles.addAll(fils.parcoursSequentiel());
+            }
+        }
+        System.out.println("Feuilles : " + feuilles);
+        return feuilles;
+    }
+    public String toString() {
+        return "Noeud{" +
+                "keys="+ keys+
+                '}';
     }
 }
 

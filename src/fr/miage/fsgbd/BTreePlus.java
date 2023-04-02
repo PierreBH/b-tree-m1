@@ -1,6 +1,7 @@
 package fr.miage.fsgbd;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import java.util.List;
 
 
 /**
@@ -59,5 +60,8 @@ public class BTreePlus<Type> implements java.io.Serializable {
             if (racine != newRacine)
                 racine = newRacine;
         }
+    }
+    public List<Noeud<Type>> parcoursSequentiel(){
+        return racine.parcoursSequentiel();
     }
 }

@@ -2,11 +2,10 @@ package fr.miage.fsgbd;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Galli Gregory, Mopolo Moke Gabriel
@@ -14,7 +13,7 @@ import java.util.ArrayList;
 public class GUI extends JFrame implements ActionListener {
     TestInteger testInt = new TestInteger();
     BTreePlus<Integer> bInt;
-    private JButton buttonClean, buttonRemove, buttonLoad, buttonSave, buttonAddMany, buttonAddItem, buttonRefresh;
+    private JButton buttonClean, buttonRemove, buttonLoad, buttonSave, buttonAddMany, buttonAddItem, buttonRefresh, buttonParcoursSequentiel;
     private JTextField txtNbreItem, txtNbreSpecificItem, txtU, txtFile, removeSpecific;
     private final JTree tree = new JTree();
 
@@ -73,6 +72,14 @@ public class GUI extends JFrame implements ActionListener {
             } else if (e.getSource() == buttonRemove) {
                 bInt.removeValeur(Integer.parseInt(removeSpecific.getText()));
             }
+            else if(e.getSource() == buttonParcoursSequentiel){
+                List<Noeud<Integer>> feuilles = bInt.parcoursSequentiel();
+                StringBuilder feuillesStringBuilder = new StringBuilder();
+                for(Noeud<Integer> feuille : feuilles){
+                    feuillesStringBuilder.append(feuille.toString()).append("\n");
+                    JOptionPane.showMessageDialog(this, "parcours seq des feuilles :\n" + feuillesStringBuilder);
+                }
+            }
         }
 
         tree.setModel(new DefaultTreeModel(bInt.bArbreToJTree()));
@@ -101,7 +108,7 @@ public class GUI extends JFrame implements ActionListener {
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(0, 5, 2, 0);
 
-        JLabel labelU = new JLabel("Nombre max de cl?s par noeud (2m): ");
+        JLabel labelU = new JLabel("Nombre max de cles par noeud (2m): ");
         c.gridx = 0;
         c.gridy = 1;
         c.weightx = 1;
@@ -113,7 +120,7 @@ public class GUI extends JFrame implements ActionListener {
         c.weightx = 2;
         pane1.add(txtU, c);
 
-        JLabel labelBetween = new JLabel("Nombre de clefs ? ajouter:");
+        JLabel labelBetween = new JLabel("Nombre de clefs a ajouter:");
         c.gridx = 0;
         c.gridy = 2;
         c.weightx = 1;
@@ -126,14 +133,14 @@ public class GUI extends JFrame implements ActionListener {
         pane1.add(txtNbreItem, c);
 
 
-        buttonAddMany = new JButton("Ajouter n ?l?ments al?atoires ? l'arbre");
+        buttonAddMany = new JButton("Ajouter n elements aleatoires a l'arbre");
         c.gridx = 2;
         c.gridy = 2;
         c.weightx = 1;
         c.gridwidth = 2;
         pane1.add(buttonAddMany, c);
 
-        JLabel labelSpecific = new JLabel("Ajouter une valeur sp?cifique:");
+        JLabel labelSpecific = new JLabel("Ajouter une valeur specifique:");
         c.gridx = 0;
         c.gridy = 3;
         c.weightx = 1;
@@ -147,14 +154,14 @@ public class GUI extends JFrame implements ActionListener {
         c.gridwidth = 1;
         pane1.add(txtNbreSpecificItem, c);
 
-        buttonAddItem = new JButton("Ajouter l'?l?ment");
+        buttonAddItem = new JButton("Ajouter l'element");
         c.gridx = 2;
         c.gridy = 3;
         c.weightx = 1;
         c.gridwidth = 2;
         pane1.add(buttonAddItem, c);
 
-        JLabel labelRemoveSpecific = new JLabel("Retirer une valeur sp?cifique:");
+        JLabel labelRemoveSpecific = new JLabel("Retirer une valeur specifique:");
         c.gridx = 0;
         c.gridy = 4;
         c.weightx = 1;
@@ -168,7 +175,7 @@ public class GUI extends JFrame implements ActionListener {
         c.gridwidth = 1;
         pane1.add(removeSpecific, c);
 
-        buttonRemove = new JButton("Supprimer l'?l?ment n de l'arbre");
+        buttonRemove = new JButton("Supprimer l'element n de l'arbre");
         c.gridx = 2;
         c.gridy = 4;
         c.weightx = 1;
@@ -217,6 +224,15 @@ public class GUI extends JFrame implements ActionListener {
         c.gridwidth = 2;
         pane1.add(buttonRefresh, c);
 
+
+        //Bouton pour lancer la recherche sequentiel
+        buttonParcoursSequentiel = new JButton("Parcours sequentiel");
+        c.gridx = 2;
+        c.gridy = 8;
+        c.weightx = 1;
+        c.gridwidth = 2;
+        pane1.add(buttonParcoursSequentiel, c);
+
         c.fill = GridBagConstraints.HORIZONTAL;
         c.ipady = 400;       //reset to default
         c.weighty = 1.0;   //request any extra vertical space
@@ -238,6 +254,7 @@ public class GUI extends JFrame implements ActionListener {
         buttonRemove.addActionListener(this);
         buttonClean.addActionListener(this);
         buttonRefresh.addActionListener(this);
+        buttonParcoursSequentiel.addActionListener(this);
 
         return pane1;
     }
