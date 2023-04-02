@@ -1,6 +1,6 @@
 package fr.miage.fsgbd;
 
-public class Position {
+public class Position implements java.io.Serializable {
     private int niveau;
     private int index;
 

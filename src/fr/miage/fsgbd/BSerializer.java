@@ -2,7 +2,7 @@ package fr.miage.fsgbd;
 
 import java.io.*;
 	
-	public class BSerializer<Type>
+	public class BSerializer<Type> implements java.io.Serializable
 	{	   
 	  public BSerializer (BTreePlus<Type> arbre, String path) 
 	  {	    

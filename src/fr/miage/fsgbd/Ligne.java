@@ -7,6 +7,10 @@ public class Ligne implements Serializable {
     String nom;
     String prenom;
 
+    public Ligne(int numSecu) {
+        this.numSecu = numSecu;
+    }
+
     public Ligne(int numSecu, String nom, String prenom) {
         this.numSecu = numSecu;
         this.nom = nom;
@@ -29,5 +33,29 @@ public class Ligne implements Serializable {
         String[] firstNames = {"Smith", "Doe", "Williams", "Brown"};
         int randomIndex = (int) (Math.random() * firstNames.length);
         return firstNames[randomIndex];
+    }
+
+    public static Ligne convertToLigne(String ligne){
+        String[] tab = ligne.split(",");
+        return new Ligne(Integer.parseInt(tab[0]), tab[1], tab[2]);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (o == this) {
+            return true;
+        }
+
+        if (!(o instanceof Ligne ligne)) {
+            return false;
+        }
+
+        return this.numSecu == ligne.numSecu;
+    }
+
+    @Override
+    public String toString() {
+        return "{ " + this.numSecu + " }";
     }
 }

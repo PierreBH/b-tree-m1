@@ -1,7 +1,9 @@
 package fr.miage.fsgbd;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.*;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -12,7 +14,7 @@ public class BTreePlus<Type> implements java.io.Serializable {
     private Noeud<Type> racine;
 
     public BTreePlus(int u, Executable e) {
-        racine = new Noeud<Type>(u, e, null, new Ligne((int) (Math.random() * 1000000000), Ligne.generateRandomFirstName(), Ligne.generatePrenom()));
+        racine = new Noeud<Type>(u, e, null);
     }
 
     public void afficheArbre() {
@@ -52,6 +54,12 @@ public class BTreePlus<Type> implements java.io.Serializable {
         return false;
     }
 
+    public boolean rechercheParIndex(Type clef){
+        Noeud<Type> noeudTrouve = this.racine.contient(clef);
+
+        return Objects.nonNull(noeudTrouve);
+    }
+
 
     public void removeValeur(Type valeur) {
         System.out.println("Retrait de la valeur : " + valeur.toString());
@@ -66,8 +74,5 @@ public class BTreePlus<Type> implements java.io.Serializable {
     }
     public Noeud<Type> rechercheSequentielleValeur(Type valeur){
         return racine.rechercheSequentielleValeur(valeur);
-    }
-    public Noeud<Type> rechercheParIndex(Type valeur){
-        return racine.contient(valeur);
     }
 }

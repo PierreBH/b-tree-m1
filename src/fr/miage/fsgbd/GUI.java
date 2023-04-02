@@ -5,7 +5,12 @@ import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Galli Gregory, Mopolo Moke Gabriel
@@ -13,9 +18,13 @@ import java.util.List;
 public class GUI extends JFrame implements ActionListener {
     TestInteger testInt = new TestInteger();
     BTreePlus<Integer> bInt;
-    private JButton buttonClean, buttonRemove, buttonLoad, buttonSave, buttonAddMany, buttonAddItem, buttonRefresh, buttonParcoursSequentiel, buttonRechercheSequentielle;
-    private JTextField txtNbreItem, txtNbreSpecificItem, txtU, txtFile, removeSpecific, rechercheSequentielle;
+    private JButton buttonClean, buttonRemove, buttonLoad, buttonSave, buttonAddMany, buttonAddItem, buttonRefresh, buttonParcoursSequentiel, buttonGenerateFile, buttonRechercheSequentielle;
+    private JTextField txtNbreItem, txtNbreSpecificItem, txtU, txtFile, removeSpecific, numberToFind;
     private final JTree tree = new JTree();
+
+    private List<Long> allAverageTime;
+    private long minTimeToFoundSeq, maxTimeToFoundSeq, minTimeToFoundIndex, maxTimeToFoundIndex;
+    private int nbFoundRechercheSequentielle, nbFoundRechercheIndex;
 
     public GUI() {
         super();
@@ -74,26 +83,62 @@ public class GUI extends JFrame implements ActionListener {
             }
             else if(e.getSource() == buttonParcoursSequentiel){
                 List<Noeud<Integer>> feuilles = bInt.parcoursSequentiel();
-                StringBuilder feuillesStringBuilder = new StringBuilder();
-                for(Noeud<Integer> feuille : feuilles){
-                    feuillesStringBuilder.append(feuille.toString()).append("\n");
-                    //JOptionPane.showMessageDialog(this, "parcours seq des feuilles :\n" + feuillesStringBuilder);
-                }
-                JOptionPane.showMessageDialog(this, "parcours seq des feuilles :\n" + feuillesStringBuilder);
+                JDialog dialog = new JDialog(this, "Parcours seq des feuilles", true);
+
+                JPanel panel = new JPanel();
+                panel.setLayout(new BorderLayout());
+                AtomicInteger index = new AtomicInteger();
+                JLabel label = new JLabel();
+                label.setText("<html>Parcours seq des feuilles : <br/>");
+                JScrollPane jScrollPane = new JScrollPane(label);
+                jScrollPane.setPreferredSize(new Dimension(400,200));
+                panel.add(jScrollPane, BorderLayout.NORTH);
+
+                JButton button = new JButton();
+                button.setText("Suivant");
+
+                button.addActionListener(e1 -> {
+                    label.setText(label.getText() + feuilles.get(index.get()).toString() + "<br/>");
+                    index.addAndGet(1);
+                });
+
+                JButton closebutton = new JButton();
+                closebutton.setText("Fermer");
+                closebutton.addActionListener(e12 -> dialog.setVisible(false));
+
+                JPanel buttonPanel = new JPanel();
+                buttonPanel.add(button);
+                buttonPanel.add(closebutton);
+                panel.add(buttonPanel, BorderLayout.SOUTH);
+
+                dialog.add(panel);
+
+                dialog.setSize(new Dimension(400, 300));
+                dialog.setLocationRelativeTo(this);
+
+                dialog.setVisible(true);
+            }
+            else if(e.getSource() == buttonGenerateFile){
+                this.generer10kLignesInFile();
+                this.readAndMakeTree();
             }
             else if(e.getSource() == buttonRechercheSequentielle){
-                int valeurRecherchee = Integer.parseInt(rechercheSequentielle.getText());
-                long startTime = System.nanoTime();
-                Noeud<Integer> trouverValeur = bInt.rechercheSequentielleValeur(valeurRecherchee);
-                long endTime = System.nanoTime();
-                System.out.println("départ " + startTime + " arrivée " + endTime);
-                long elapsedTime = endTime - startTime;
-                if(trouverValeur != null){
-                    JOptionPane.showMessageDialog(this, "la valeur " + valeurRecherchee + " a été trouvée dans le noeud " + trouverValeur + " en " + elapsedTime + " nanosecondes");
+                if (!Objects.equals(numberToFind.getText(), "")) {
+                    this.nbFoundRechercheSequentielle = 0;
+                    this.nbFoundRechercheIndex = 0;
+                    this.minTimeToFoundSeq = 999999999;
+                    this.maxTimeToFoundSeq = 0;
+                    this.minTimeToFoundIndex = 999999999;
+                    this.maxTimeToFoundIndex = 0;
+                    this.allAverageTime = new ArrayList<>();
+                    for(int i = 0; i < 50; i++){
+                        this.generer10kLignesInFile();
+                        this.readAndMakeTree();
+                        this.calculateTimeMethodRechercheSequentielle();
+                        this.calculateTimeMethodRechercheIndex();
+                    }
                 }
-                else{
-                    JOptionPane.showMessageDialog(this, "la valeur " + valeurRecherchee + " n'a pas été trouvée");
-                }
+                this.displayStats();
             }
         }
         tree.setModel(new DefaultTreeModel(bInt.bArbreToJTree()));
@@ -103,6 +148,23 @@ public class GUI extends JFrame implements ActionListener {
         tree.updateUI();
     }
 
+    private void displayStats() {
+        System.out.println("----- Recherches séquentielles -----");
+        System.out.println("Temps min : "+this.minTimeToFoundSeq+" nanosecondes");
+        System.out.println("Temps max : "+this.maxTimeToFoundSeq+" nanosecondes");
+        Long avrgTime = 0L;
+        for (Long time : allAverageTime)
+            avrgTime += time;
+        System.out.println("Temps moyen : "+(avrgTime/50)+" nanosecondes");
+        System.out.println("----- Recherches par index -----");
+        System.out.println("Temps min : "+this.minTimeToFoundIndex+" nanosecondes");
+        System.out.println("Temps max : "+this.maxTimeToFoundIndex+" nanosecondes");
+        Long avrgTimeIndex = 0L;
+        for (Long time : allAverageTime)
+            avrgTimeIndex += time;
+        System.out.println("Temps moyen : "+(avrgTimeIndex/50)+" nanosecondes");
+    }
+
     private void build() {
         setTitle("Indexation - B Arbre");
         setSize(760, 760);
@@ -110,6 +172,78 @@ public class GUI extends JFrame implements ActionListener {
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(buildContentPane());
+    }
+
+    public void generer10kLignesInFile() {
+        try {
+            FileWriter fileWriter = new FileWriter("10kLignes.txt");
+            for (int i = 0; i < 10000; i++) {
+                // générer un numéro social compris entre 0 et 10000
+                int numeroSocial = (int) (Math.random() * 10000);
+                String nom = Ligne.generateRandomFirstName();
+                String prenom = Ligne.generatePrenom();
+                fileWriter.write(numeroSocial + "," + nom + "," + prenom + "\n");
+            }
+            fileWriter.close();
+        }catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void readAndMakeTree() {
+        try{
+            File file = new File("10kLignes.txt");
+            Scanner scanner = new Scanner(file);
+
+            while (scanner.hasNextLine()){
+                String line = scanner.nextLine().replace(" ", "");
+                Ligne ligne = Ligne.convertToLigne(line);
+                bInt.addValeur(ligne.getNumSecu());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void calculateTimeMethodRechercheSequentielle(){
+        long startTime = System.nanoTime();
+        this.rechercheSequentielleInFile(Integer.parseInt(numberToFind.getText()));
+        long endTime = System.nanoTime();
+        long elapsedTime = endTime - startTime;
+        if (elapsedTime < this.minTimeToFoundSeq)
+            this.minTimeToFoundSeq = elapsedTime;
+        if (elapsedTime > this.maxTimeToFoundSeq)
+            this.maxTimeToFoundSeq = elapsedTime;
+        this.allAverageTime.add(elapsedTime);
+    }
+
+    public void calculateTimeMethodRechercheIndex(){
+        long startTime = System.nanoTime();
+        this.bInt.rechercheParIndex(Integer.parseInt(numberToFind.getText()));
+        long endTime = System.nanoTime();
+        long elapsedTime = endTime - startTime;
+        if (elapsedTime < this.minTimeToFoundIndex)
+            this.minTimeToFoundIndex = elapsedTime;
+        if (elapsedTime > this.maxTimeToFoundIndex)
+            this.maxTimeToFoundIndex = elapsedTime;
+        this.allAverageTime.add(elapsedTime);
+    }
+
+    public boolean rechercheSequentielleInFile(int valueToFind){
+        try{
+            File file = new File("10kLignes.txt");
+            Scanner scanner = new Scanner(file);
+
+            while (scanner.hasNextLine()){
+                String line = scanner.nextLine().replace(" ", "");
+                Ligne ligne = Ligne.convertToLigne(line);
+                if(valueToFind == ligne.getNumSecu())
+                    return true;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 
     private JPanel buildContentPane() {
@@ -210,6 +344,20 @@ public class GUI extends JFrame implements ActionListener {
         c.gridwidth = 1;
         pane1.add(txtFile, c);
 
+        JLabel labelNumberToFind = new JLabel("Nombre à trouver - recherche séquentielle et index : ");
+        c.gridx = 0;
+        c.gridy = 10;
+        c.weightx = 1;
+        c.gridwidth = 1;
+        pane1.add(labelNumberToFind, c);
+
+        numberToFind = new JTextField("", 7);
+        c.gridx = 1;
+        c.gridy = 10;
+        c.weightx = 1;
+        c.gridwidth = 1;
+        pane1.add(numberToFind, c);
+
         buttonSave = new JButton("Sauver l'arbre");
         c.gridx = 2;
         c.gridy = 5;
@@ -247,34 +395,26 @@ public class GUI extends JFrame implements ActionListener {
         c.gridwidth = 2;
         pane1.add(buttonParcoursSequentiel, c);
 
-        buttonRechercheSequentielle = new JButton("Recherche sequentiel");
+        buttonGenerateFile = new JButton("Générer 10k lignes");
         c.gridx = 2;
         c.gridy = 9;
         c.weightx = 1;
         c.gridwidth = 2;
+        pane1.add(buttonGenerateFile, c);
+
+        buttonRechercheSequentielle = new JButton("Recherche séquentielle et index");
+        c.gridx = 2;
+        c.gridy = 10;
+        c.weightx = 1;
+        c.gridwidth = 2;
         pane1.add(buttonRechercheSequentielle, c);
-
-
-        JLabel labelRecherche = new JLabel("Recherche d'une valeur specifique:");
-        c.gridx = 0;
-        c.gridy = 9;
-        c.weightx = 1;
-        c.gridwidth = 1;
-        pane1.add(labelRecherche, c);
-
-        rechercheSequentielle = new JTextField( 7);
-        c.gridx = 1;
-        c.gridy = 9;
-        c.weightx = 1;
-        c.gridwidth = 1;
-        pane1.add(rechercheSequentielle, c);
 
         c.fill = GridBagConstraints.HORIZONTAL;
         c.ipady = 400;       //reset to default
         c.weighty = 1.0;   //request any extra vertical space
         c.gridwidth = 4;   //2 columns wide
         c.gridx = 0;
-        c.gridy = 10;
+        c.gridy = 11;
 
         JScrollPane scrollPane = new JScrollPane(tree);
         pane1.add(scrollPane, c);
@@ -291,6 +431,7 @@ public class GUI extends JFrame implements ActionListener {
         buttonClean.addActionListener(this);
         buttonRefresh.addActionListener(this);
         buttonParcoursSequentiel.addActionListener(this);
+        buttonGenerateFile.addActionListener(this);
         buttonRechercheSequentielle.addActionListener(this);
 
         return pane1;

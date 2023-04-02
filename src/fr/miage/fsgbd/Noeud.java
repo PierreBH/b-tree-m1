@@ -1,5 +1,7 @@
 package fr.miage.fsgbd;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -636,6 +638,11 @@ public class Noeud<Type> implements java.io.Serializable {
         }
         return null;
     }
+
+    public boolean rechercheParIndex(Type clef) {
+        return keys.contains(clef);
+    }
+
     public String toString() {
         return "Noeud{" +
                 "keys="+ keys+
