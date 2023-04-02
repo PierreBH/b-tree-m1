@@ -64,4 +64,10 @@ public class BTreePlus<Type> implements java.io.Serializable {
     public List<Noeud<Type>> parcoursSequentiel(){
         return racine.parcoursSequentiel();
     }
+    public Noeud<Type> rechercheSequentielleValeur(Type valeur){
+        return racine.rechercheSequentielleValeur(valeur);
+    }
+    public Noeud<Type> rechercheParIndex(Type valeur){
+        return racine.contient(valeur);
+    }
 }

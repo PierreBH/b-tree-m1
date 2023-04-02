@@ -612,6 +612,30 @@ public class Noeud<Type> implements java.io.Serializable {
         System.out.println("Feuilles : " + feuilles);
         return feuilles;
     }
+    public Noeud<Type> rechercheSequentielleValeur(Type valeur){
+        // Si le noeud courant est une feuille
+        if(fils.isEmpty()) {
+            // On parcours les clefs du noeud courant
+            for(Type cle : keys){
+                // Si la clef est égale à la valeur recherchée, on retourne le noeud courant
+                if(cle.equals(valeur)){
+                    return this;
+                }
+            }
+        }
+        // Sinon, on parcours les fils du noeud courant
+        else {
+            // On parcours les fils du noeud courant
+            for (Noeud<Type> fils :fils){
+                Noeud<Type> noeudTrouve = fils.rechercheSequentielleValeur(valeur);
+                if(noeudTrouve != null){
+                    // Si on a trouvé la valeur dans un des fils, on retourne le noeud courant
+                    return noeudTrouve;
+                }
+            }
+        }
+        return null;
+    }
     public String toString() {
         return "Noeud{" +
                 "keys="+ keys+

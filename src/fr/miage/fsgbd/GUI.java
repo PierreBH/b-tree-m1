@@ -13,8 +13,8 @@ import java.util.List;
 public class GUI extends JFrame implements ActionListener {
     TestInteger testInt = new TestInteger();
     BTreePlus<Integer> bInt;
-    private JButton buttonClean, buttonRemove, buttonLoad, buttonSave, buttonAddMany, buttonAddItem, buttonRefresh, buttonParcoursSequentiel;
-    private JTextField txtNbreItem, txtNbreSpecificItem, txtU, txtFile, removeSpecific;
+    private JButton buttonClean, buttonRemove, buttonLoad, buttonSave, buttonAddMany, buttonAddItem, buttonRefresh, buttonParcoursSequentiel, buttonRechercheSequentielle;
+    private JTextField txtNbreItem, txtNbreSpecificItem, txtU, txtFile, removeSpecific, rechercheSequentielle;
     private final JTree tree = new JTree();
 
     public GUI() {
@@ -77,11 +77,25 @@ public class GUI extends JFrame implements ActionListener {
                 StringBuilder feuillesStringBuilder = new StringBuilder();
                 for(Noeud<Integer> feuille : feuilles){
                     feuillesStringBuilder.append(feuille.toString()).append("\n");
-                    JOptionPane.showMessageDialog(this, "parcours seq des feuilles :\n" + feuillesStringBuilder);
+                    //JOptionPane.showMessageDialog(this, "parcours seq des feuilles :\n" + feuillesStringBuilder);
+                }
+                JOptionPane.showMessageDialog(this, "parcours seq des feuilles :\n" + feuillesStringBuilder);
+            }
+            else if(e.getSource() == buttonRechercheSequentielle){
+                int valeurRecherchee = Integer.parseInt(rechercheSequentielle.getText());
+                long startTime = System.nanoTime();
+                Noeud<Integer> trouverValeur = bInt.rechercheSequentielleValeur(valeurRecherchee);
+                long endTime = System.nanoTime();
+                System.out.println("départ " + startTime + " arrivée " + endTime);
+                long elapsedTime = endTime - startTime;
+                if(trouverValeur != null){
+                    JOptionPane.showMessageDialog(this, "la valeur " + valeurRecherchee + " a été trouvée dans le noeud " + trouverValeur + " en " + elapsedTime + " nanosecondes");
+                }
+                else{
+                    JOptionPane.showMessageDialog(this, "la valeur " + valeurRecherchee + " n'a pas été trouvée");
                 }
             }
         }
-
         tree.setModel(new DefaultTreeModel(bInt.bArbreToJTree()));
         for (int i = 0; i < tree.getRowCount(); i++)
             tree.expandRow(i);
@@ -233,12 +247,34 @@ public class GUI extends JFrame implements ActionListener {
         c.gridwidth = 2;
         pane1.add(buttonParcoursSequentiel, c);
 
+        buttonRechercheSequentielle = new JButton("Recherche sequentiel");
+        c.gridx = 2;
+        c.gridy = 9;
+        c.weightx = 1;
+        c.gridwidth = 2;
+        pane1.add(buttonRechercheSequentielle, c);
+
+
+        JLabel labelRecherche = new JLabel("Recherche d'une valeur specifique:");
+        c.gridx = 0;
+        c.gridy = 9;
+        c.weightx = 1;
+        c.gridwidth = 1;
+        pane1.add(labelRecherche, c);
+
+        rechercheSequentielle = new JTextField( 7);
+        c.gridx = 1;
+        c.gridy = 9;
+        c.weightx = 1;
+        c.gridwidth = 1;
+        pane1.add(rechercheSequentielle, c);
+
         c.fill = GridBagConstraints.HORIZONTAL;
         c.ipady = 400;       //reset to default
         c.weighty = 1.0;   //request any extra vertical space
         c.gridwidth = 4;   //2 columns wide
         c.gridx = 0;
-        c.gridy = 8;
+        c.gridy = 10;
 
         JScrollPane scrollPane = new JScrollPane(tree);
         pane1.add(scrollPane, c);
@@ -255,6 +291,7 @@ public class GUI extends JFrame implements ActionListener {
         buttonClean.addActionListener(this);
         buttonRefresh.addActionListener(this);
         buttonParcoursSequentiel.addActionListener(this);
+        buttonRechercheSequentielle.addActionListener(this);
 
         return pane1;
     }
